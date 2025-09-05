@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="faccf70c-6684-4467-b739-4e6ab13a1818" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="for-each-demo" doc:id="f23959ed-6c84-468a-b023-4a199a1a5cbc" >
+		<http:listener doc:name="Listener" doc:id="8cd1457f-94f9-483d-b1bd-9adbe0e5f0ff" config-ref="HTTP_Listener_config" path="/for-each-demo"/>
+		<logger level="INFO" doc:name="Logger" doc:id="0c6ab21a-0f9b-4f57-9f7c-66e849a35899" message="Inside for each demo"/>
+		<ee:transform doc:name="Setting payload" doc:id="b4ca3008-419a-4945-a4ba-22721ddfb0fa" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+[
+	{
+		"name" : "harjinder"
+	},
+	{
+		"middlename" : "singh"
+	},
+	{
+		"lastname" : "naggi"
+	}
+]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<foreach doc:name="For Each" doc:id="5d542d51-9c07-4910-8a28-54e965774394" collection="#[payload]" batchSize="2">
+			<logger level="INFO" doc:name="Logger" doc:id="a863e88f-3466-4e95-8c25-6fd73139bd3a" message="Inside for each : #[payload]"/>
+			<set-payload value='#["Inside for each payload"]' doc:name="Set Payload" doc:id="685c9789-bd15-4769-b672-f0421f82c691" />
+			<set-variable value='#["Inside for each variable"]' doc:name="Set Variable" doc:id="8b5589ba-34af-4f80-bf50-da10af0b5ae2" variableName="forEachVar"/>
+		</foreach>
+		<logger level="INFO" doc:name="Logger" doc:id="e0dc4d4a-fff9-4b4d-9cb0-91ad90519f5c" message="payload after for each : #[payload]"/>
+		<logger level="INFO" doc:name="Logger" doc:id="dab937b9-18e3-4cc7-b403-a34e4ed22ed4" message="Variable after for each : #[vars.forEachVar]"/>
+	</flow>
+	<flow name="for-each-demoFlow" doc:id="1a137f05-ad02-415a-9ed4-6800f4946e41" >
+		<http:listener doc:name="Listener" doc:id="7de0acc7-7022-4220-a104-86b3c513929a" config-ref="HTTP_Listener_config" path="/for-each-demo2"/>
+		<logger level="INFO" doc:name="Logger" doc:id="92c6cc88-6eec-423b-afa0-e8f15f033b90" message="Inside for each demo"/>
+		<ee:transform doc:name="Transform Message" doc:id="b731c7d0-c731-461c-9df2-e935548af6c5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+[
+	{
+		"name" : "harjinder"
+	},
+	{
+		"middlename" : "singh"
+	},
+	{
+		"lastname" : "naggi"
+	}
+]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<foreach doc:name="For Each" doc:id="5a9fd4c4-8ee3-42fa-acab-17d42c3dafae" collection="#[payload]">
+			<ee:transform doc:name="Transform Message" doc:id="4a9e774b-adf8-4dc2-820d-ef579f3ed8f6" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="accumulate" ><![CDATA[%dw 2.0
+output application/java
+---
+payload ++ {
+	"test" : "message"
+}]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</foreach>
+		<logger level="INFO" doc:name="Logger" doc:id="3c690cbb-7250-4f39-a9f5-1741169ccc79" message="accumulate variable is : #[vars.accumulate]"/>
+	</flow>
+</mule>

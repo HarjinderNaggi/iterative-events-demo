@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="1c57d489-20ee-40be-a580-a5f3db64c1cb" >
+		<http:request-connection host="localhost" port="8082" />
+	</http:request-config>
+	<flow name="parallel-for-each-demoFlow" doc:id="ac56d32d-9d65-4c0e-a3a0-4bcd3c6e067c" >
+		<http:listener doc:name="Listener" doc:id="cf2cd860-0da4-4b6a-989a-76b779adee99" config-ref="HTTP_Listener_config" path="/parallel-for-each-demo"/>
+		<logger level="INFO" doc:name="Logger" doc:id="27133603-90a3-4ce9-95e1-fc21c3ad4654" message="Inside parallel for each demo"/>
+		<ee:transform doc:name="Transform Message" doc:id="b06a1f3e-ae76-452a-988b-ee491817fa8c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+[
+	{
+		"name" : "name1"
+	},
+	{
+		"name" : "name2"
+	},
+	{
+		"name" : "name3"
+	},
+	{
+		"name" : "name4"
+	},
+	{
+		"name" : "name5"
+	},
+	{
+		"name" : "name6"
+	},
+	{
+		"name" : "name7"
+	},
+	{
+		"name" : "name8"
+	}
+]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<parallel-foreach doc:name="Parallel For Each" doc:id="39e4bf11-50c1-4644-8444-5ed4c47c51a7" collection="#[payload]" maxConcurrency="3">
+			<logger level="INFO" doc:name="Logger" doc:id="72a3da57-6a28-4877-bd90-33e3760a451f" message="Logger inside Parallel For Each : #[payload]"/>
+			<ee:transform doc:name="Transform Message" doc:id="1a789b23-cafd-4f00-b466-4d8f617baa4a" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload ++ {
+	"test" : "message"
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<set-variable value='#["Variable Inside Parallel For Each"]' doc:name="Set Variable" doc:id="d5e8e60a-8e2b-424d-92f7-dba728816601" variableName="varInsideParallelForEach"/>
+			<logger level="INFO" doc:name="Logger" doc:id="d349e040-3215-4db2-a716-8863bd1d7d23" message="Variable Inside Parallel for each : #[vars.varInsideParallelForEach]"/>
+		</parallel-foreach>
+		<logger level="INFO" doc:name="Logger" doc:id="01ffe41f-0932-4e10-919b-e3db205f2e42" message="After Parallel For Each : #[payload]"/>
+		<logger level="INFO" doc:name="Logger" doc:id="b4b24245-ec5e-430f-aff2-f5b68209da70" message="After Parallel For Each : #[vars.varInsideParallelForEach]"/>
+	</flow>
+	<flow name="parallel-for-each-demoFlow-errorflow" doc:id="ce393104-0a8a-46d8-b358-64bfce645fc7" >
+		<http:listener doc:name="Listener" doc:id="6ca97c50-9646-4890-be5c-f633aa75fc35" config-ref="HTTP_Listener_config" path="/parallel-for-each-demo-errorflow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="33a1df25-1ee5-45f6-9efc-e843c92b0e99" message="Inside parallel for each demo"/>
+		<ee:transform doc:name="Transform Message" doc:id="bdbb56ad-44fd-4f0e-af12-743dc583d29c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+[
+	{
+		"name" : "name1"
+	},
+	{
+		"name" : "name2"
+	},
+	{
+		"name" : "name3"
+	},
+	{
+		"name" : "name4"
+	},
+	{
+		"name" : "name5"
+	},
+	{
+		"name" : "name6"
+	},
+	{
+		"name" : "name7"
+	},
+	{
+		"name" : "name8"
+	}
+]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<parallel-foreach doc:name="Parallel For Each" doc:id="1f73c894-6f31-4ea8-8dd1-1a83446566d6" collection="#[payload]" maxConcurrency="1">
+			<logger level="INFO" doc:name="Logger" doc:id="d15cb9de-ded6-4245-a5fa-6222b2c83115" message="Logger inside Parallel For Each : #[payload]"/>
+			<ee:transform doc:name="Transform Message" doc:id="4eff987b-d580-483a-acee-7b7a72c686d3" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload ++ {
+	"test" : "message"
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<http:request method="GET" doc:name="Request" doc:id="215d2ced-c76d-45c4-a824-049f3388c864" config-ref="HTTP_Request_configuration" path="/errorpath"/>
+			<set-variable value='#["Variable Inside Parallel For Each"]' doc:name="Set Variable" doc:id="5cb0b15b-4181-4e66-8be3-ea9dbc316aff" variableName="varInsideParallelForEach"/>
+			<logger level="INFO" doc:name="Logger" doc:id="653fc3eb-b01d-41c9-857e-fbbd8df7df2d" message="Variable Inside Parallel for each : #[vars.varInsideParallelForEach]"/>
+		</parallel-foreach>
+		<logger level="INFO" doc:name="Logger" doc:id="3d19b11b-ca52-428e-8fe7-69c23c197bf4" message="After Parallel For Each : #[payload]"/>
+		<logger level="INFO" doc:name="Logger" doc:id="b39a7429-3211-4fca-82a2-3f1df44945af" message="After Parallel For Each : #[vars.varInsideParallelForEach]"/>
+	</flow>
+	<flow name="parallel-for-each-demoFlow-errorflow2" doc:id="e68e4ec6-fb7b-420d-b1fb-1bb9c6a993f3" >
+		<http:listener doc:name="Listener" doc:id="23ef9cca-82b5-450a-a9b3-6e5d86777214" config-ref="HTTP_Listener_config" path="/parallel-for-each-demo-errorflow2"/>
+		<logger level="INFO" doc:name="Logger" doc:id="a37c2a04-a167-4443-80fc-202eb124a178" message="Inside parallel for each demo"/>
+		<ee:transform doc:name="Transform Message" doc:id="e4a1ed58-a799-4633-80fc-8aba7aaabf12" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+[
+	{
+		"name" : "name1"
+	},
+	{
+		"name" : "name2"
+	},
+	{
+		"name" : "name3"
+	},
+	{
+		"name" : "name4"
+	},
+	{
+		"name" : "name5"
+	},
+	{
+		"name" : "name6"
+	},
+	{
+		"name" : "name7"
+	},
+	{
+		"name" : "name8"
+	}
+]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<parallel-foreach doc:name="Parallel For Each" doc:id="b6ab089c-eb55-49b6-9709-0dfe00a9ebb4" collection="#[payload]" maxConcurrency="1">
+			<logger level="INFO" doc:name="Logger" doc:id="f9de951e-0c41-4cfa-b11e-fbd6366e0cd5" message="Logger inside Parallel For Each : #[payload]"/>
+			<ee:transform doc:name="Transform Message" doc:id="f756d5b9-9d21-461d-99d4-1a81d4790421" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload ++ {
+	"test" : "message"
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<choice doc:name="Choice" doc:id="41620765-50d9-455b-ab73-bf8b4ac3f224" >
+				<when expression='#[(payload.name == "name1") or (payload.name == "name2") or (payload.name == "name3") or (payload.name == "name4")]'>
+					<logger level="INFO" doc:name="Logger" doc:id="f504203a-3291-40a0-b5bc-6ccd92c8dc8f" message="First 4 records"/>
+				</when>
+				<otherwise >
+					<http:request method="GET" doc:name="Request" doc:id="e35ae9f4-9cee-4d21-abbd-b2477e135831" config-ref="HTTP_Request_configuration" path="/errorpath" />
+				</otherwise>
+			</choice>
+			<set-variable value='#["Variable Inside Parallel For Each"]' doc:name="Set Variable" doc:id="79be8525-86c9-4303-8746-39540bd5b861" variableName="varInsideParallelForEach"/>
+			<logger level="INFO" doc:name="Logger" doc:id="4fe26bae-e65f-4afb-89c3-a3c0132d6c56" message="Variable Inside Parallel for each : #[vars.varInsideParallelForEach]"/>
+		</parallel-foreach>
+		<logger level="INFO" doc:name="Logger" doc:id="5ad3c293-bc16-454e-a1d9-b969cc11be3b" message="After Parallel For Each : #[payload]"/>
+		<logger level="INFO" doc:name="Logger" doc:id="393cd9b4-b1c2-4196-8ebd-5ee27dfcd33e" message="After Parallel For Each : #[vars.varInsideParallelForEach]"/>
+	</flow>
+	<flow name="parallel-for-each-demoFlow-errorflow3" doc:id="9535ee94-a4ab-4501-86ae-10fef1790d7c" >
+		<http:listener doc:name="Listener" doc:id="9c968434-76fb-4264-b024-513f3fe46fa7" config-ref="HTTP_Listener_config" path="/parallel-for-each-demo-errorflow3"/>
+		<logger level="INFO" doc:name="Logger" doc:id="6b4652a7-8eb9-4800-b1ad-50d0b5989cf1" message="Inside parallel for each demo"/>
+		<ee:transform doc:name="Transform Message" doc:id="3e548655-b5f9-4a53-a9f2-0b847ad4789e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+[
+	{
+		"name" : "name1"
+	},
+	{
+		"name" : "name2"
+	},
+	{
+		"name" : "name3"
+	},
+	{
+		"name" : "name4"
+	},
+	{
+		"name" : "name5"
+	},
+	{
+		"name" : "name6"
+	},
+	{
+		"name" : "name7"
+	},
+	{
+		"name" : "name8"
+	}
+]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<parallel-foreach doc:name="Parallel For Each" doc:id="cc21fb02-2385-4e53-af1c-4bc63282fd2a" collection="#[payload]" maxConcurrency="1">
+			<logger level="INFO" doc:name="Logger" doc:id="32c3029e-3c6c-4c80-999b-8e577dbd17b0" message="Logger inside Parallel For Each : #[payload]"/>
+			<ee:transform doc:name="Transform Message" doc:id="6dc8cdcf-8862-4cc8-a4c2-90af9d745782" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload ++ {
+	"test" : "message"
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<choice doc:name="Choice" doc:id="ac4f2f9f-98d1-4d38-8614-b944b64ad3d8" >
+				<when expression='#[(payload.name == "name1") or (payload.name == "name2") or (payload.name == "name3") or (payload.name == "name4")]'>
+					<logger level="INFO" doc:name="Logger" doc:id="f4e7c0b7-32fc-43b4-8f98-056014d0adcf" message="First 4 records"/>
+				</when>
+				<otherwise>
+					<try doc:name="Try" doc:id="0f600564-81fa-4a6c-939f-b930a42bd6f0" >
+						<http:request method="GET" doc:name="Request" doc:id="0d972a05-4038-4f11-a669-b4db17acc9f7" config-ref="HTTP_Request_configuration" path="/errorpath" />
+						<error-handler >
+							<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="978d3754-9780-4079-8acc-3b17fc308354" >
+								<set-payload value="Error" doc:name="Set Payload" doc:id="93774343-b520-4c1b-b919-52a85525a5db" />
+							</on-error-continue>
+						</error-handler>
+					</try>
+
+				</otherwise>
+			
+</choice>
+			<set-variable value='#["Variable Inside Parallel For Each"]' doc:name="Set Variable" doc:id="f5baa382-cd30-4221-8320-9dc3ce8916c8" variableName="varInsideParallelForEach"/>
+			<logger level="INFO" doc:name="Logger" doc:id="3d180739-24dd-4dff-8f4e-2461f07d7642" message="Variable Inside Parallel for each : #[vars.varInsideParallelForEach]"/>
+		</parallel-foreach>
+		<ee:transform doc:name="Transform Message" doc:id="ab2c585b-b364-43e3-915c-bc2dcb4c2c57" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="603e1f14-41d1-4c2d-95e6-c8354dc2455b" message="After Parallel For Each : #[payload]"/>
+		<logger level="INFO" doc:name="Logger" doc:id="5dd4a94e-01ad-4659-b457-bb888b3050fa" message="After Parallel For Each : #[vars.varInsideParallelForEach]"/>
+	</flow>
+</mule>
